@@ -195,8 +195,13 @@ const onLogin = async formEl => {
                   );
                 })
                 .then(() => {
+                  return storage.get("peidi-userInfo");
+                })
+                .then(res => {
+                  console.log(res);
                   if (getUrlParam("source")) {
-                    console.log("source", getUrlParam("source"));
+                    console.log("to-source", getUrlParam("source"));
+                    removeToken();
                     window.location.href = getUrlParam("source");
                   }
                 })
@@ -206,8 +211,6 @@ const onLogin = async formEl => {
             } else {
               console.log("storage 未初始化");
             }
-
-            removeToken();
           } else {
             message("登录失败", { type: "error" });
           }
