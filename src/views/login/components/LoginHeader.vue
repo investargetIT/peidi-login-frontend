@@ -1,5 +1,23 @@
 <script lang="ts" setup>
+//@ts-ignore
+import { useTranslationLang } from "@/layout/hooks/useTranslationLang";
 import { Sunny } from "@element-plus/icons-vue";
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
+const { locale, translationCh, translationEn } = useTranslationLang();
+import { useDataThemeChange } from "@/layout/hooks/useDataThemeChange";
+const { dataTheme, overallStyle, dataThemeChange } = useDataThemeChange();
+dataThemeChange(overallStyle.value);
+
+const changeLang = () => {
+  if (locale.value === "zh") {
+    locale.value = "en";
+    translationEn();
+  } else {
+    locale.value = "zh";
+    translationCh();
+  }
+};
 </script>
 
 <template>
@@ -10,8 +28,17 @@ import { Sunny } from "@element-plus/icons-vue";
       class="peidi-login-header-logo"
     />
     <div>
-      <el-button circle text color="#000" size="large">中</el-button>
-      <el-button circle text color="#000" size="large">
+      <el-button circle text color="#000" size="large" @click="changeLang">
+        {{ t("peidiLogin.language") }}
+      </el-button>
+      <el-button
+        v-if="false"
+        circle
+        text
+        color="#000"
+        size="large"
+        @click="dataThemeChange(overallStyle)"
+      >
         <el-icon :size="18"><Sunny /></el-icon
       ></el-button>
     </div>
@@ -20,10 +47,10 @@ import { Sunny } from "@element-plus/icons-vue";
 
 <style lang="scss" scoped>
 .peidi-login-header-container {
-  width: 100%;
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
+  width: 100%;
 
   .peidi-login-header-logo {
     height: 40px;
@@ -31,8 +58,8 @@ import { Sunny } from "@element-plus/icons-vue";
 
   .el-button {
     &:hover {
-      background-color: rgba(255, 255, 255, 0.1);
       color: #000;
+      background-color: rgb(255 255 255 / 10%);
     }
   }
 }

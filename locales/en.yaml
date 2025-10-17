@@ -234,3 +234,24 @@ login:
   purePassWordSureReg: Please enter confirm password
   purePassWordDifferentReg: The two passwords do not match!
   purePassWordUpdateReg: Password has been updated
+peidiLogin:
+  language: 中
+  welcomeLogin: Welcome to Login
+  loginTitle: Login
+  loginTip: Please sign in to your account to continue
+  useEmail: Use Email
+  useMobile: Use Phone
+  email: Email
+  emailPlaceholder: Please enter your email
+  mobile: Mobile
+  mobilePlaceholder: Please enter your mobile number
+  forgotPassword: Forgot Password?
+  password: Password
+  passwordPlaceholder: Please enter your password
+  rememberMe: Remember Me
+  loginButton: Login in
+  emailCorrectReg: Please enter the correct email format
+  mobileCorrectReg: Please enter the correct mobile number format
+  emailRequiredReg: Please enter your email
+  mobileRequiredReg: Please enter your mobile number
+  passwordRequiredReg: Please enter your password

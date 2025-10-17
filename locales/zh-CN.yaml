@@ -234,3 +234,24 @@ login:
   purePassWordSureReg: 请输入确认密码
   purePassWordDifferentReg: 两次密码不一致!
   purePassWordUpdateReg: 修改密码成功
+peidiLogin:
+  language: EN
+  welcomeLogin: 欢迎登录
+  loginTitle: 登录
+  loginTip: 请登录您的账户以继续
+  useEmail: 使用邮箱
+  useMobile: 使用手机号
+  email: 邮箱
+  emailPlaceholder: 请输入您的邮箱
+  mobile: 手机号
+  mobilePlaceholder: 请输入您的手机号
+  forgotPassword: 忘记密码?
+  password: 密码
+  passwordPlaceholder: 请输入您的密码
+  rememberMe: 记住我
+  loginButton: 登录
+  emailCorrectReg: 请输入正确的邮箱格式
+  mobileCorrectReg: 请输入正确的手机号格式
+  emailRequiredReg: 请输入您的邮箱
+  mobileRequiredReg: 请输入您的手机号
+  passwordRequiredReg: 请输入您的密码

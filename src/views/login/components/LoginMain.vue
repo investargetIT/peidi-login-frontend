@@ -23,6 +23,8 @@ import { useUserStoreHook } from "@/store/modules/user";
 import { getUrlParam, isDingTalk } from "../utils";
 import { CrossStorageClient } from "cross-storage";
 import { removeToken } from "@/utils/auth";
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
 
 let storage: CrossStorageClient;
 
@@ -37,22 +39,48 @@ const form = reactive({
   site: ""
 });
 const formRef = ref(null);
-const rules = reactive({
+
+// 校验邮箱是否包含@符号
+const validateEmail = (rule, value, callback) => {
+  if (value && !value.includes("@")) {
+    callback(new Error(t("peidiLogin.emailCorrectReg")));
+  } else {
+    callback();
+  }
+};
+
+// 校验是否为纯数字
+const validateNumber = (rule, value, callback) => {
+  if (value && !/^\d+$/.test(value)) {
+    callback(new Error(t("peidiLogin.mobileCorrectReg")));
+  } else {
+    callback();
+  }
+};
+const rules: any = reactive({
   email: [
     {
       required: mode.value === "email",
-      message: "请输入您的邮箱",
+      message: t("peidiLogin.emailRequiredReg"),
       trigger: "blur"
-    }
+    },
+    { validator: validateEmail, trigger: "blur" }
   ],
   mobile: [
     {
       required: mode.value == "mobile",
-      message: "请输入您的手机号",
+      message: t("peidiLogin.mobileRequiredReg"),
+      trigger: "blur"
+    },
+    { validator: validateNumber, trigger: "blur" }
+  ],
+  password: [
+    {
+      required: true,
+      message: t("peidiLogin.passwordRequiredReg"),
       trigger: "blur"
     }
-  ],
-  password: [{ required: true, message: "请输入您的密码", trigger: "blur" }]
+  ]
 });
 
 const siteEnum = ref([
@@ -79,19 +107,19 @@ function onkeypress({ code }: KeyboardEvent) {
 onMounted(() => {
   window.document.addEventListener("keypress", onkeypress);
 
-  // 获取基地枚举信息
-  getUserSite()
-    .then(res => {
-      if (res.success) {
-        const { data } = res;
-        // console.log("siteEnum", data);
-        siteEnum.value = data;
-      }
-    })
-    .catch(err => {
-      console.log("获取基地枚举信息失败", err);
-      message("获取基地枚举信息失败", { type: "error" });
-    });
+  // 获取基地枚举信息 -登录不再选基地
+  // getUserSite()
+  //   .then(res => {
+  //     if (res.success) {
+  //       const { data } = res;
+  //       // console.log("siteEnum", data);
+  //       siteEnum.value = data;
+  //     }
+  //   })
+  //   .catch(err => {
+  //     console.log("获取基地枚举信息失败", err);
+  //     message("获取基地枚举信息失败", { type: "error" });
+  //   });
 
   console.log(getUrlParam("source"));
   if (getUrlParam("source")) {
@@ -154,10 +182,15 @@ const onLogin = async formEl => {
                   return storage.set(
                     "peidi-userInfo",
                     JSON.stringify({
+                      // 邮箱或手机号
                       username:
                         mode.value === "email" ? form.email : form.mobile,
+                      // 密码
                       password: form.password,
-                      site: form.site || null
+                      // 基地ID
+                      site: form.site || null,
+                      // 记住密码
+                      remember: remember.value
                     })
                   );
                 })
@@ -303,14 +336,18 @@ ddLogin();
   <el-card style="width: 446px">
     <div class="peidi-login-main-welcome">
       <div class="peidi-login-main-welcome-block">
-        <LoginCircle style="margin-right: 8px" />欢迎登录
+        <LoginCircle style="margin-right: 8px" />{{
+          t("peidiLogin.welcomeLogin")
+        }}
       </div>
     </div>
 
     <div class="peidi-login-main-title">
-      <p style="font-size: 24px; color: #3151ac; font-weight: 700">登录</p>
-      <p style="font-size: 14px; color: oklch(0.556 0 0)">
-        请登录您的账户以继续
+      <p style="font-size: 24px; font-weight: 700; color: #3151ac">
+        {{ t("peidiLogin.loginTitle") }}
+      </p>
+      <p style="font-size: 14px; color: oklch(55.6% 0 0deg)">
+        {{ t("peidiLogin.loginTip") }}
       </p>
     </div>
 
@@ -331,39 +368,48 @@ ddLogin();
         class="peidi-login-main-radio-group"
         @change="handleModeChange()"
       >
-        <el-radio-button label="使用邮箱" value="email" />
-        <el-radio-button label="使用手机号" value="mobile" />
+        <el-radio-button :label="t('peidiLogin.useEmail')" value="email" />
+        <el-radio-button :label="t('peidiLogin.useMobile')" value="mobile" />
       </el-radio-group>
 
-      <el-form-item v-show="mode === 'email'" label="邮箱" prop="email">
+      <el-form-item
+        v-show="mode === 'email'"
+        :label="t('peidiLogin.email')"
+        prop="email"
+      >
         <el-input
           v-model="form.email"
-          placeholder="请输入您的邮箱"
+          :placeholder="t('peidiLogin.emailPlaceholder')"
           :prefix-icon="useRenderIcon(Mail)"
           clearable
         />
       </el-form-item>
-      <el-form-item v-show="mode === 'mobile'" label="手机号" prop="mobile">
+      <el-form-item
+        v-show="mode === 'mobile'"
+        :label="t('peidiLogin.mobile')"
+        prop="mobile"
+      >
         <el-input
           v-model="form.mobile"
-          placeholder="请输入您的手机号"
+          :placeholder="t('peidiLogin.mobilePlaceholder')"
           :prefix-icon="useRenderIcon(Phone)"
           clearable
         />
       </el-form-item>
+      <div class="peidi-login-main-forgot-password">
+        <span>{{ t("peidiLogin.forgotPassword") }}</span>
+      </div>
 
-      <div class="peidi-login-main-forgot-password">忘记密码？</div>
-
-      <el-form-item label="密码" prop="password">
+      <el-form-item :label="t('peidiLogin.password')" prop="password">
         <el-input
           v-model="form.password"
-          placeholder="请输入您的密码"
+          :placeholder="t('peidiLogin.passwordPlaceholder')"
           :prefix-icon="useRenderIcon(Lock)"
           clearable
           show-password
         />
       </el-form-item>
-      <el-form-item label="生产基地">
+      <!-- <el-form-item label="生产基地">
         <el-select
           v-model="form.site"
           placeholder="选择生产基地"
@@ -383,18 +429,18 @@ ddLogin();
             :value="item.id"
           />
         </el-select>
-      </el-form-item>
+      </el-form-item> -->
 
       <div class="peidi-login-main-remember">
         <el-checkbox v-model="remember" size="large" />
         <span
           style="
+            margin-left: 8px;
             font-size: 14px;
             font-weight: 400;
-            color: oklch(0.145 0 0);
-            margin-left: 8px;
+            color: oklch(14.5% 0 0deg);
           "
-          >记住我</span
+          >{{ t("peidiLogin.rememberMe") }}</span
         >
       </div>
 
@@ -404,7 +450,7 @@ ddLogin();
           style="width: 100%; height: 36px; background-color: #304ea6"
           :loading="loading"
           @click="onLogin(formRef)"
-          >登录</el-button
+          >{{ t("peidiLogin.loginButton") }}</el-button
         >
       </el-form-item>
     </el-form>
@@ -413,25 +459,26 @@ ddLogin();
 
 <style lang="scss" scoped>
 .peidi-login-main-welcome {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 14px;
   color: #fff;
-  display: flex;
-  justify-content: center;
-  align-items: center;
 
   .peidi-login-main-welcome-block {
-    background-color: #304ea6;
-    padding: 10px 20px;
-    border-radius: 20px;
     display: flex;
-    justify-content: center;
     align-items: center;
+    justify-content: center;
+    padding: 10px 20px;
+    background-color: #304ea6;
+    border-radius: 20px;
   }
 }
 
 .peidi-login-main-title {
   margin-top: 20px;
   text-align: center;
+
   p {
     margin-bottom: 10px;
   }
@@ -440,25 +487,26 @@ ddLogin();
 .peidi-login-main-form {
   :deep(.el-form-item__label) {
     font-size: 14px;
-    color: oklch(0.145 0 0);
+    color: oklch(14.5% 0 0deg);
   }
 }
 
 .peidi-login-main-radio-group {
-  margin-bottom: 20px;
   width: 100%;
+  margin-bottom: 20px;
 
   :deep(.el-radio-button) {
     flex: 1;
   }
+
   :deep(.el-radio-button__inner) {
     width: 100%;
-    color: oklch(0.556 0 0);
-    border-color: transparent;
+    color: oklch(55.6% 0 0deg);
     background-color: #f5f5f7;
+    border-color: transparent;
 
     &:hover {
-      color: oklch(0.556 0 0);
+      color: oklch(55.6% 0 0deg);
     }
   }
 }
@@ -475,15 +523,15 @@ ddLogin();
 }
 
 .peidi-login-main-forgot-password {
-  font-size: 14px;
-  color: #2d4a9e;
-  cursor: pointer;
   display: flex;
   flex-direction: row-reverse;
   margin-bottom: -22px;
+  font-size: 14px;
+  color: #2d4a9e;
+  cursor: pointer;
 
   &:hover {
-    color: rgb(245, 166, 35);
+    color: rgb(245 166 35);
   }
 }
 </style>
