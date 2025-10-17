@@ -1,3 +1,5 @@
 export const DINGTALK_CORP_ID = "dingfc722e531a4125b735c2f4657eb6378f";
 
 export const DINGTALK_LOGIN_FREE_DEFAULT_PASSWORD = "Aa123456";
+
+export const CRYPTOJS_KEY = "secret key peidi12345";

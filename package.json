@@ -67,6 +67,7 @@
     "china-area-data": "^5.0.1",
     "cropperjs": "^1.6.2",
     "cross-storage": "^1.0.0",
+    "crypto-js": "^4.2.0",
     "dayjs": "^1.11.12",
     "dingtalk-jsapi": "^3.2.0",
     "echarts": "^5.5.1",

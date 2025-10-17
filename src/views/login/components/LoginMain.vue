@@ -20,7 +20,7 @@ import {
 } from "@/views/login/utils/constants";
 import { message } from "@/utils/message";
 import { useUserStoreHook } from "@/store/modules/user";
-import { getUrlParam, isDingTalk } from "../utils";
+import { encryptMessage, getUrlParam, isDingTalk } from "../utils";
 import { CrossStorageClient } from "cross-storage";
 import { removeToken } from "@/utils/auth";
 import { useI18n } from "vue-i18n";
@@ -175,10 +175,37 @@ const onLogin = async formEl => {
               );
             }
 
+            //#region 专门为EPS解决的问题，后续优化
+            if (
+              getUrlParam("source").includes("eps.peidi") ||
+              getUrlParam("source").includes("12.18.1.21")
+            ) {
+              window.location.href =
+                getUrlParam("source") +
+                `?k1=${encryptMessage(mode.value === "email" ? form.email : form.mobile)}&k2=${encryptMessage(form.password)}`;
+              return;
+            }
+            //#endregion
+
             if (storage) {
               storage
                 .onConnect()
                 .then(() => {
+                  localStorage.setItem(
+                    "peidi-userInfo",
+                    JSON.stringify({
+                      // 邮箱或手机号
+                      username:
+                        mode.value === "email" ? form.email : form.mobile,
+                      // 密码
+                      password: form.password,
+                      // 基地ID
+                      site: form.site || null,
+                      // 记住密码
+                      remember: remember.value
+                    })
+                  );
+
                   return storage.set(
                     "peidi-userInfo",
                     JSON.stringify({
@@ -202,6 +229,7 @@ const onLogin = async formEl => {
                   if (getUrlParam("source")) {
                     console.log("to-source", getUrlParam("source"));
                     removeToken();
+                    // storage.close();
                     window.location.href = getUrlParam("source");
                   }
                 })
