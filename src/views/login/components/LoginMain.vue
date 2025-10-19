@@ -20,7 +20,12 @@ import {
 } from "@/views/login/utils/constants";
 import { message } from "@/utils/message";
 import { useUserStoreHook } from "@/store/modules/user";
-import { encryptMessage, getUrlParam, isDingTalk } from "../utils";
+import {
+  decryptMessage,
+  encryptMessage,
+  getUrlParam,
+  isDingTalk
+} from "../utils";
 import { CrossStorageClient } from "cross-storage";
 import { removeToken } from "@/utils/auth";
 import { useI18n } from "vue-i18n";
@@ -121,13 +126,15 @@ onMounted(() => {
   //     message("获取基地枚举信息失败", { type: "error" });
   //   });
 
-  console.log(getUrlParam("source"));
-  if (getUrlParam("source")) {
-    console.log("source", `${getUrlParam("source").split("#")[0]}hub.html`);
-    storage = new CrossStorageClient(
-      `${getUrlParam("source").split("#")[0]}hub.html`
-    );
-  }
+  //#region ifarme 跨域通信
+  // console.log(getUrlParam("source"));
+  // if (getUrlParam("source")) {
+  //   console.log("source", `${getUrlParam("source").split("#")[0]}hub.html`);
+  //   storage = new CrossStorageClient(
+  //     `${getUrlParam("source").split("#")[0]}hub.html`
+  //   );
+  // }
+
   // storage
   //   .onConnect()
   //   .then(() => {
@@ -142,13 +149,14 @@ onMounted(() => {
   //   .catch(err => {
   //     console.error(err);
   //   });
+  //#endregion
 });
 onBeforeUnmount(() => {
   window.document.removeEventListener("keypress", onkeypress);
 });
 
 const onLogin = async formEl => {
-  console.log("login!");
+  console.log("login");
   if (!formEl) return;
   await formEl.validate((valid, fields) => {
     // console.log("valid", valid, "fields", fields, "form", form);
@@ -157,88 +165,95 @@ const onLogin = async formEl => {
       useUserStoreHook()
         .loginByUsername({
           username: mode.value === "email" ? form.email : form.mobile,
-          password: form.password,
-          site: form.site || null
+          password: form.password
+          // site: form.site || null
         })
         .then((res: any) => {
           if (res.success) {
-            console.log("isDingTalk", isDingTalk());
-            if (!isDingTalk()) {
-              getUserCheck(res?.data).then((res: any) =>
-                localStorage.setItem(
-                  "ddUserInfo",
-                  JSON.stringify({
-                    userid: res?.data?.id,
-                    dept_id_list: [res?.data?.deptId]
-                  })
-                )
-              );
-            }
+            // console.log("isDingTalk", isDingTalk());
+            // if (!isDingTalk()) {
+            //   getUserCheck(res?.data).then((res: any) =>
+            //     localStorage.setItem(
+            //       "ddUserInfo",
+            //       JSON.stringify({
+            //         userid: res?.data?.id,
+            //         dept_id_list: [res?.data?.deptId]
+            //       })
+            //     )
+            //   );
+            // }
 
-            //#region 专门为EPS解决的问题，后续优化
-            if (
-              getUrlParam("source").includes("eps.peidi") ||
-              getUrlParam("source").includes("12.18.1.21")
-            ) {
-              window.location.href =
-                getUrlParam("source") +
-                `?k1=${encryptMessage(mode.value === "email" ? form.email : form.mobile)}&k2=${encryptMessage(form.password)}`;
-              return;
+            //#region 统一登录方法，目前是URL参数传递🥹，已经上线EPS
+            const source = getUrlParam("source");
+            if (source) {
+              const sourceUrl = decryptMessage(source);
+              console.log("source", source);
+              console.log("sourceUrl", sourceUrl);
+              const toUrl =
+                sourceUrl +
+                `?key1=${encryptMessage(mode.value === "email" ? form.email : form.mobile)}&key2=${encryptMessage(form.password)}&key3=${encryptMessage(remember.value.toString())}`;
+              console.log("window.location.href", toUrl);
+              window.location.href = toUrl;
+              removeToken(); // 登录成功后，移除token
+            } else {
+              message("登录成功但未指定跳转地址", { type: "success" });
             }
             //#endregion
 
-            if (storage) {
-              storage
-                .onConnect()
-                .then(() => {
-                  localStorage.setItem(
-                    "peidi-userInfo",
-                    JSON.stringify({
-                      // 邮箱或手机号
-                      username:
-                        mode.value === "email" ? form.email : form.mobile,
-                      // 密码
-                      password: form.password,
-                      // 基地ID
-                      site: form.site || null,
-                      // 记住密码
-                      remember: remember.value
-                    })
-                  );
+            //#region iframe 跨域通信
+            // if (storage) {
+            //   storage
+            //     .onConnect()
+            //     .then(() => {
+            //       localStorage.setItem(
+            //         "peidi-userInfo",
+            //         JSON.stringify({
+            //           // 邮箱或手机号
+            //           username:
+            //             mode.value === "email" ? form.email : form.mobile,
+            //           // 密码
+            //           password: form.password,
+            //           // 基地ID
+            //           site: form.site || null,
+            //           // 记住密码
+            //           remember: remember.value
+            //         })
+            //       );
 
-                  return storage.set(
-                    "peidi-userInfo",
-                    JSON.stringify({
-                      // 邮箱或手机号
-                      username:
-                        mode.value === "email" ? form.email : form.mobile,
-                      // 密码
-                      password: form.password,
-                      // 基地ID
-                      site: form.site || null,
-                      // 记住密码
-                      remember: remember.value
-                    })
-                  );
-                })
-                .then(() => {
-                  return storage.get("peidi-userInfo");
-                })
-                .then(res => {
-                  console.log(res);
-                  if (getUrlParam("source")) {
-                    console.log("to-source", getUrlParam("source"));
-                    removeToken();
-                    // storage.close();
-                    window.location.href = getUrlParam("source");
-                  }
-                })
-                .catch(err => {
-                  console.error(err);
-                });
-            } else {
-              console.log("storage 未初始化");
-            }
+            //       return storage.set(
+            //         "peidi-userInfo",
+            //         JSON.stringify({
+            //           // 邮箱或手机号
+            //           username:
+            //             mode.value === "email" ? form.email : form.mobile,
+            //           // 密码
+            //           password: form.password,
+            //           // 基地ID
+            //           site: form.site || null,
+            //           // 记住密码
+            //           remember: remember.value
+            //         })
+            //       );
+            //     })
+            //     .then(() => {
+            //       return storage.get("peidi-userInfo");
+            //     })
+            //     .then(res => {
+            //       console.log(res);
+            //       if (getUrlParam("source")) {
+            //         console.log("to-source", getUrlParam("source"));
+            //         removeToken();
+            //         // storage.close();
+            //         window.location.href = getUrlParam("source");
+            //       }
+            //     })
+            //     .catch(err => {
+            //       console.error(err);
+            //     });
+            // } else {
+            //   console.log("storage 未初始化");
+            // }
+            //#endregion
           } else {
             message("登录失败", { type: "error" });
           }
@@ -360,7 +375,7 @@ const ddLogin = () => {
 };
 //#endregion
 
-ddLogin();
+// ddLogin(); // 钉钉环境不走登录, 因为钉钉环境已经有登录了, 不需要再登录一次
 </script>
 
 <template>
@@ -427,7 +442,7 @@ ddLogin();
           clearable
         />
       </el-form-item>
-      <div class="peidi-login-main-forgot-password">
+      <div v-if="false" class="peidi-login-main-forgot-password">
         <span>{{ t("peidiLogin.forgotPassword") }}</span>
       </div>
 

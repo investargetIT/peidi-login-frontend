@@ -29,3 +29,15 @@ export const getUrlParam = (name: string) => {
 export const encryptMessage = (message: string) => {
   return CryptoJS.AES.encrypt(message, CRYPTOJS_KEY).toString();
 };
+
+/**
+ * 解密
+ * @param encryptedData 加密数据
+ * @returns 解密后的字符串
+ */
+export const decryptMessage = (encryptedData: string) => {
+  // encryptedData = encryptedData.replace(/\s/g, "");
+  encryptedData = encryptedData.replace(/\s/g, "+"); // 加号在浏览器里会被转义为空格, 需要替换回来
+  const bytes = CryptoJS.AES.decrypt(encryptedData, CRYPTOJS_KEY);
+  return bytes.toString(CryptoJS.enc.Utf8);
+};

@@ -9,6 +9,11 @@ import { useDataThemeChange } from "@/layout/hooks/useDataThemeChange";
 const { dataTheme, overallStyle, dataThemeChange } = useDataThemeChange();
 dataThemeChange(overallStyle.value);
 
+const handleChangeTheme = () => {
+  dataTheme.value = !dataTheme.value;
+  dataThemeChange(overallStyle.value);
+};
+
 const changeLang = () => {
   if (locale.value === "zh") {
     locale.value = "en";
@@ -17,6 +22,7 @@ const changeLang = () => {
     locale.value = "zh";
     translationCh();
   }
+  window.location.reload(); // 刷新页面, 暴力解决语言切换后, 表单验证不切换问题
 };
 </script>
 
@@ -31,13 +37,14 @@ const changeLang = () => {
       <el-button circle text color="#000" size="large" @click="changeLang">
         {{ t("peidiLogin.language") }}
       </el-button>
+      <!-- 切换主题按钮, 效果不理想, 暂不使用 -->
       <el-button
         v-if="false"
         circle
         text
         color="#000"
         size="large"
-        @click="dataThemeChange(overallStyle)"
+        @click="handleChangeTheme()"
       >
         <el-icon :size="18"><Sunny /></el-icon
       ></el-button>
