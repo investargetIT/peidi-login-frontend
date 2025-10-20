@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+//@ts-ignore
 import { ref } from "vue";
 import { getAertxInfoPage, downloadFile } from "@/api/recruitment";
 import { ElMessage } from "element-plus";
@@ -40,27 +41,37 @@ getAertxInfoPage({
 
 const handleDownload = (index: number, row: User) => {
   console.log(index, row);
-  downloadFile({
-    objectName: row.blobData
-  }).then(res => {
-    if (res) {
-      // console.log("downloadFile:", res);
-      const blob = new Blob([res], {
-        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-      });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${row.name}-${row.phone}.xlsx`;
+  // downloadFile({
+  //   objectName: row.blobData
+  // }).then(res => {
+  //   if (res) {
+  //     console.log("downloadFile:", res);
+  //     const blob = new Blob([res], {
+  //       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  //     });
+  //     const url = URL.createObjectURL(blob);
+  //     const a = document.createElement("a");
+  //     a.href = url;
+  //     a.download = `${row.name}-${row.phone}.xlsx`;
 
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    } else {
-      ElMessage.error(res?.msg || "下载文件失败");
-    }
-  });
+  //     document.body.appendChild(a);
+  //     a.click();
+  //     document.body.removeChild(a);
+  //     URL.revokeObjectURL(url);
+  //   } else {
+  //     ElMessage.error(res?.msg || "下载文件失败");
+  //   }
+  // });
+  try {
+    const a = document.createElement("a");
+    a.href = `https://api.peidigroup.cn/ui/common/download?objectName=${row.blobData}`;
+    a.download = `${row.name}-${row.phone}.xlsx`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  } catch (err) {
+    ElMessage.error(err?.msg || "下载文件失败");
+  }
 };
 </script>
 

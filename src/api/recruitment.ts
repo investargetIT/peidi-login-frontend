@@ -59,7 +59,10 @@ export const downloadFile = params => {
     "get",
     `https://api.peidigroup.cn/ui/common/download`,
     {
-      params
+      params,
+      headers: {
+        responseType: "blob"
+      }
     }
   );
 };

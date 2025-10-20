@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+//@ts-ignore
 import { reactive, ref } from "vue";
 import { ElMessage, type FormInstance } from "element-plus";
 import { PFLIST } from "./constants";
@@ -48,7 +49,11 @@ const submitForm = async (formEl: FormInstance | undefined) => {
         if (res) {
           // console.log("blobData:", res);
           let formData = new FormData();
-          formData.append("file", res, form.name + form.phone + ".xlsx");
+          formData.append(
+            "file",
+            res,
+            "_" + form.name + "-" + form.phone + ".xlsx"
+          );
           // console.log("formData:", formData.get("file"));
           uploadFile({
             file: formData.get("file")
@@ -196,13 +201,13 @@ const mockButtonClick = () => {
 
 <style lang="scss" scoped>
 .test-instructions {
+  padding: 20px;
+  margin: 20px;
   font-family: Arial, sans-serif;
   line-height: 1.6;
-  margin: 20px;
-  padding: 20px;
+  background-color: #f9f9f9;
   border: 1px solid #ddd;
   border-radius: 5px;
-  background-color: #f9f9f9;
 }
 
 .test-instructions p {
