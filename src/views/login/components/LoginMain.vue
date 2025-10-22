@@ -28,8 +28,12 @@ import {
 } from "../utils";
 import { CrossStorageClient } from "cross-storage";
 import { removeToken } from "@/utils/auth";
+import { useNav } from "@/layout/hooks/useNav";
 import { useI18n } from "vue-i18n";
+import { get } from "sortablejs";
 const { t } = useI18n();
+
+const { logout } = useNav();
 
 let storage: CrossStorageClient;
 
@@ -112,6 +116,10 @@ function onkeypress({ code }: KeyboardEvent) {
 onMounted(() => {
   window.document.addEventListener("keypress", onkeypress);
 
+  if (!getUrlParam("source")) {
+    message("未指定跳转地址", { type: "error" });
+  }
+
   // 获取基地枚举信息 -登录不再选基地
   // getUserSite()
   //   .then(res => {
@@ -160,6 +168,10 @@ const onLogin = async formEl => {
   if (!formEl) return;
   await formEl.validate((valid, fields) => {
     // console.log("valid", valid, "fields", fields, "form", form);
+    if (!getUrlParam("source")) {
+      message("未指定跳转地址", { type: "error" });
+      return;
+    }
     if (valid) {
       loading.value = true;
       useUserStoreHook()
@@ -193,8 +205,10 @@ const onLogin = async formEl => {
                 sourceUrl +
                 `?key1=${encryptMessage(mode.value === "email" ? form.email : form.mobile)}&key2=${encryptMessage(form.password)}&key3=${encryptMessage(remember.value.toString())}`;
               console.log("window.location.href", toUrl);
-              window.location.href = toUrl;
               removeToken(); // 登录成功后，移除token
+              logout();
+              window.location.href = toUrl;
+              // logout();
             } else {
               message("登录成功但未指定跳转地址", { type: "success" });
             }
