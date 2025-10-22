@@ -104,6 +104,7 @@ const mockButtonClick = () => {
       >
         <el-tab-pane label="问卷" name="first">
           <div>
+            <div>16PF人格测评分析表</div>
             <div class="test-instructions">
               <p>答题要求</p>
 
@@ -134,11 +135,12 @@ const mockButtonClick = () => {
                 </div>
               </div>
             </div>
-            <el-button type="primary" @click="mockButtonClick"
+            <el-button v-if="isDevEnv()" type="primary" @click="mockButtonClick"
               >随机填写</el-button
             >
             <el-form-item>
               <el-button
+                v-if="isDevEnv()"
                 type="primary"
                 style="margin-top: 5px"
                 @click="submitForm(formRef)"
