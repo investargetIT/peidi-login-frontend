@@ -53,3 +53,25 @@ export const registerMobile = data => {
     }
   );
 };
+
+// 发送验证码
+export const validateCode = data => {
+  return http.request<Result<any>>(
+    "post",
+    `https://user.peidigroup.cn/user/validate-code`,
+    {
+      data
+    }
+  );
+};
+
+// 重置密码
+export const resetPassword = data => {
+  return http.request<Result<any>>(
+    "post",
+    `https://user.peidigroup.cn/user/reset-password`,
+    {
+      data
+    }
+  );
+};

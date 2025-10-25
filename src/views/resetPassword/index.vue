@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import "./index.scss";
-import LoginHeader from "./components/LoginHeader.vue";
-import LoginMain from "./components/LoginMain.vue";
+import "@/views/login/index.scss";
+import LoginHeader from "@/views/login/components/LoginHeader.vue";
+import LoginResetPassword from "@/views/login/components/LoginResetPassword.vue";
 </script>
 
 <template>
@@ -11,7 +11,7 @@ import LoginMain from "./components/LoginMain.vue";
         <LoginHeader />
       </el-header>
       <el-main class="peidi-login-main peidi-login-flex">
-        <LoginMain />
+        <LoginResetPassword />
       </el-main>
       <el-footer class="peidi-login-footer peidi-login-flex">
         © 2025 Peidi Corporation. All rights reserved.

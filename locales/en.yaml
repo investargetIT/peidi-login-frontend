@@ -255,3 +255,13 @@ peidiLogin:
   emailRequiredReg: Please enter your email
   mobileRequiredReg: Please enter your mobile number
   passwordRequiredReg: Please enter your password
+  pureResetPassword: Reset Password
+  resetPasswordTip: Enter your email or phone number to reset your password
+  backToLogin: Back to Login
+  verifyCode: Verify Code
+  verifyCodePlaceholder: Please enter your verify code
+  sendVerifyCode: Send Verify Code
+  verifyCodeInfo: Seconds
+  verifyCodeSendFail: Verify Code Send Fail
+  resetPasswordSuccess: Password Reset Success
+  resetPasswordFail: Password Reset Fail

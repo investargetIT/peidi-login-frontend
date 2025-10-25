@@ -255,3 +255,13 @@ peidiLogin:
   emailRequiredReg: 请输入您的邮箱
   mobileRequiredReg: 请输入您的手机号
   passwordRequiredReg: 请输入您的密码
+  pureResetPassword: 重置密码
+  resetPasswordTip: 输入您的邮箱或手机号以重置密码
+  backToLogin: 返回登录
+  verifyCode: 验证码
+  verifyCodePlaceholder: 请输入您的验证码
+  sendVerifyCode: 发送验证码
+  verifyCodeInfo: 秒后重新发送
+  verifyCodeSendFail: 验证码发送失败
+  resetPasswordSuccess: 密码重置成功
+  resetPasswordFail: 密码重置失败

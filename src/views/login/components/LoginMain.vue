@@ -31,6 +31,7 @@ import { removeToken } from "@/utils/auth";
 import { useNav } from "@/layout/hooks/useNav";
 import { useI18n } from "vue-i18n";
 import { get } from "sortablejs";
+import router from "@/router";
 const { t } = useI18n();
 
 const { logout } = useNav();
@@ -390,6 +391,14 @@ const ddLogin = () => {
 //#endregion
 
 // ddLogin(); // 钉钉环境不走登录, 因为钉钉环境已经有登录了, 不需要再登录一次
+
+/** 处理重置密码点击事件 */
+const handleResetPasswordClick = () => {
+  router.push({
+    path: "/reset-password",
+    query: { source: getUrlParam("source") }
+  });
+};
 </script>
 
 <template>
@@ -456,8 +465,10 @@ const ddLogin = () => {
           clearable
         />
       </el-form-item>
-      <div v-if="false" class="peidi-login-main-forgot-password">
-        <span>{{ t("peidiLogin.forgotPassword") }}</span>
+      <div class="peidi-login-main-forgot-password">
+        <span @click="handleResetPasswordClick">{{
+          t("peidiLogin.forgotPassword")
+        }}</span>
       </div>
 
       <el-form-item :label="t('peidiLogin.password')" prop="password">

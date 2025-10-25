@@ -102,7 +102,12 @@ export function resetRouter() {
 }
 
 /** 路由白名单 */
-const whiteList = ["/login", "/recruitment", "/recruitment-list"];
+const whiteList = [
+  "/login",
+  "/recruitment",
+  "/recruitment-list",
+  "/reset-password"
+];
 
 const { VITE_HIDE_HOME } = import.meta.env;
 

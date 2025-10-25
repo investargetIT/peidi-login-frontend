@@ -69,5 +69,15 @@ export default [
       showLink: false,
       rank: 106
     }
+  },
+  {
+    path: "/reset-password",
+    name: "ResetPassword",
+    component: () => import("@/views/resetPassword/index.vue"),
+    meta: {
+      title: "重置密码",
+      showLink: false,
+      rank: 107
+    }
   }
 ] satisfies Array<RouteConfigsTable>;
