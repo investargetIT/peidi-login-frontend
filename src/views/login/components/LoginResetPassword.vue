@@ -162,33 +162,44 @@ const validationCodeSpanRef = ref();
 const isSendValidationCode = ref<string>(t("peidiLogin.sendVerifyCode"));
 
 // 发送验证码
-const sendValidationCode = () => {
+const sendValidationCode = async () => {
   if (!isSendValidationCode.value.endsWith(t("peidiLogin.sendVerifyCode")))
     return;
-
-  isSendValidationCode.value = `60${t("peidiLogin.verifyCodeInfo")}`;
-  validationCodeSpanRef.value.style = "color: gray;"; // 颜色变灰
-  const countDown = ref<number>(60); // 倒计时
-  const temp = setInterval(() => {
-    countDown.value--;
-    isSendValidationCode.value =
-      countDown.value + t("peidiLogin.verifyCodeInfo");
-    if (!countDown.value) {
-      clearInterval(temp);
-      validationCodeSpanRef.value.style = "color: #1764FF;"; // 颜色变蓝
-      isSendValidationCode.value = t("peidiLogin.sendVerifyCode");
-      countDown.value = 60;
-    }
-  }, 1000);
-
+  if (mode.value === "email") {
+    await formRef.value!.validateField("email");
+  } else {
+    await formRef.value!.validateField("mobile");
+  }
   // 发送
   try {
     // const res = await sendCheckCode({ username: phone }); // 返回boolean
     // if (res) message("验证码发送成功", { type: "success" });
     validateCode({
-      codeType: mode.value === "email" ? "email_register" : "sms_register",
+      codeType:
+        mode.value === "email" ? "email_reset_password" : "sms_reset_password",
       destination: mode.value === "email" ? form.email : form.mobile
-    }).then(res => {});
+    }).then((res: any) => {
+      if (res && res?.code === 200) {
+        isSendValidationCode.value = `60${t("peidiLogin.verifyCodeInfo")}`;
+        validationCodeSpanRef.value.style = "color: gray;"; // 颜色变灰
+        const countDown = ref<number>(60); // 倒计时
+        const temp = setInterval(() => {
+          countDown.value--;
+          isSendValidationCode.value =
+            countDown.value + t("peidiLogin.verifyCodeInfo");
+          if (!countDown.value) {
+            clearInterval(temp);
+            validationCodeSpanRef.value.style = "color: #1764FF;"; // 颜色变蓝
+            isSendValidationCode.value = t("peidiLogin.sendVerifyCode");
+            countDown.value = 60;
+          }
+        }, 1000);
+      } else {
+        message(res?.msg || t("peidiLogin.verifyCodeSendFail"), {
+          type: "error"
+        });
+      }
+    });
   } catch {
     message(t("peidiLogin.verifyCodeSendFail"), { type: "error" });
   }
@@ -267,7 +278,6 @@ const sendValidationCode = () => {
           v-model="form.validateCode"
           :placeholder="t('peidiLogin.verifyCodePlaceholder')"
           :prefix-icon="useRenderIcon(VerifyCode)"
-          clearable
         >
           <template #suffix>
             <span
