@@ -118,7 +118,7 @@ onMounted(() => {
   window.document.addEventListener("keypress", onkeypress);
 
   if (!getUrlParam("source")) {
-    message("未指定跳转地址", { type: "error" });
+    message(t("peidiLogin.noJumpToDefault"), { type: "error" });
   }
 
   // 获取基地枚举信息 -登录不再选基地
@@ -170,7 +170,7 @@ const onLogin = async formEl => {
   await formEl.validate((valid, fields) => {
     // console.log("valid", valid, "fields", fields, "form", form);
     if (!getUrlParam("source")) {
-      message("未指定跳转地址", { type: "error" });
+      message(t("peidiLogin.noJumpToDefault"), { type: "error" });
       return;
     }
     if (valid) {
@@ -211,7 +211,9 @@ const onLogin = async formEl => {
               window.location.href = toUrl;
               // logout();
             } else {
-              message("登录成功但未指定跳转地址", { type: "success" });
+              message(t("peidiLogin.loginSuccessButNoJump"), {
+                type: "success"
+              });
             }
             //#endregion
 
@@ -270,7 +272,13 @@ const onLogin = async formEl => {
             // }
             //#endregion
           } else {
-            message("登录失败", { type: "error" });
+            if (res?.code === 100100001) {
+              message(t("peidiLogin.accountOrPasswordError"), {
+                type: "error"
+              });
+              return;
+            }
+            message(t("peidiLogin.loginFail"), { type: "error" });
           }
         })
         .finally(() => (loading.value = false));

@@ -265,3 +265,7 @@ peidiLogin:
   verifyCodeSendFail: 验证码发送失败
   resetPasswordSuccess: 密码重置成功
   resetPasswordFail: 密码重置失败
+  accountOrPasswordError: 账号或密码错误
+  loginFail: 登录失败
+  loginSuccessButNoJump: 登录成功但未指定跳转地址
+  noJumpToDefault: 未指定跳转地址

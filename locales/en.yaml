@@ -265,3 +265,7 @@ peidiLogin:
   verifyCodeSendFail: Verify Code Send Fail
   resetPasswordSuccess: Password Reset Success
   resetPasswordFail: Password Reset Fail
+  accountOrPasswordError: Account or password error
+  loginFail: Login Fail
+  loginSuccessButNoJump: Login Success But No Jump Address Specified
+  noJumpToDefault: No Jump Address Specified
