@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 //@ts-ignore
-import { reactive, ref } from "vue";
+import { computed, reactive, ref, watch } from "vue";
 import { ElMessage, type FormInstance } from "element-plus";
 import { PFLIST } from "./constants";
 import {
@@ -11,6 +11,8 @@ import {
 } from "./utils";
 import type { TabsPaneContext } from "element-plus";
 import { setAertxInfo, uploadFile } from "@/api/recruitment";
+
+const loading = ref(false);
 
 const activeName = ref("first");
 const handleClick = (tab: TabsPaneContext, event: Event) => {
@@ -42,6 +44,7 @@ const submitForm = async (formEl: FormInstance | undefined) => {
       console.log("submit!");
       console.log("form:", form);
       // activeName.value = "second";
+      loading.value = true;
       isSubmit.value = true;
       // processFormAndDownloadExcel(form);
 
@@ -57,24 +60,34 @@ const submitForm = async (formEl: FormInstance | undefined) => {
           // console.log("formData:", formData.get("file"));
           uploadFile({
             file: formData.get("file")
-          }).then(res => {
-            if (res?.code === 200) {
-              // ElMessage.success("文件上传成功");
-              setAertxInfo({
-                userName: form.name,
-                mobile: form.phone,
-                content: res?.data || ""
-              }).then(res => {
-                if (res?.code === 200) {
-                  ElMessage.success("提交成功");
-                } else {
-                  ElMessage.error(res?.msg || "提交失败");
-                }
-              });
-            } else {
-              ElMessage.error(res?.msg || "文件上传失败");
-            }
-          });
+          })
+            .then(res => {
+              if (res?.code === 200) {
+                // ElMessage.success("文件上传成功");
+                setAertxInfo({
+                  userName: form.name,
+                  mobile: form.phone,
+                  content: res?.data || ""
+                })
+                  .then(res => {
+                    if (res?.code === 200) {
+                      ElMessage.success("叮！您的问卷已成功送达~ 📮");
+                    } else {
+                      ElMessage.error(res?.msg || "提交失败");
+                    }
+                  })
+                  .finally(() => {
+                    loading.value = false;
+                  });
+              } else {
+                ElMessage.error(res?.msg || "文件上传失败");
+                loading.value = false;
+              }
+            })
+            .catch(err => {
+              ElMessage.error(err?.msg || "文件上传失败");
+              loading.value = false;
+            });
         }
       });
     } else {
@@ -91,6 +104,20 @@ const mockButtonClick = () => {
     // form[key] = 1;
   });
 };
+
+//#region 进度条逻辑
+const formatProgress = percentage =>
+  percentage === 100 ? "Full" : `${percentage}%`;
+// 计算属性，根据form的变化，动态计算进度条的值
+const progressVal = computed(() => {
+  // 填写的数量 / 所有题目的数量 * 100 取整数
+  return Math.floor(
+    (Object.keys(form).filter(key => form[key]).length /
+      Object.keys(form).length) *
+      100
+  );
+});
+//#endregion
 </script>
 
 <template>
@@ -104,7 +131,7 @@ const mockButtonClick = () => {
       >
         <el-tab-pane label="问卷" name="first">
           <div>
-            <div>16PF人格测评分析表</div>
+            <div class="font-bold">16PF人格测评分析表</div>
             <div class="test-instructions">
               <p>答题要求</p>
 
@@ -113,15 +140,16 @@ const mockButtonClick = () => {
               </p>
 
               <p>
-                本测验每一题都有三个可供选择的答案（A、B、C），请在蓝色方格内填写你所选择的答案并用"
-                1 "表示。
+                本测验每一题都有三个可供选择的答案（A、B、C）。
+                <!-- ，请在蓝色方格内填写你所选择的答案并用" 1 "表示。 -->
               </p>
 
               <p>应当记住的是：</p>
 
               <div class="instructions-list">
                 <div class="instruction-item">
-                  1. 每一题只能选择一个答案，填写只能填" ";
+                  1. 每一题只能选择一个答案;
+                  <!-- ，填写只能填" "; -->
                 </div>
                 <div class="instruction-item">2. 不可漏掉任何题;</div>
                 <div class="instruction-item">3. 尽量不选折中性答案;</div>
@@ -136,7 +164,7 @@ const mockButtonClick = () => {
               </div>
             </div>
             <el-button v-if="isDevEnv()" type="primary" @click="mockButtonClick"
-              >随机填写</el-button
+              >随机填写（仅开发环境）</el-button
             >
             <el-form-item>
               <el-button
@@ -144,9 +172,32 @@ const mockButtonClick = () => {
                 type="primary"
                 style="margin-top: 5px"
                 @click="submitForm(formRef)"
-                >提交</el-button
+                >提交（仅开发环境）</el-button
               >
             </el-form-item>
+
+            <el-affix :offset="0">
+              <div
+                class="w-full bg-[#ffffff] border-b border-[#e5e5e5] pt-[10px]"
+              >
+                <el-progress
+                  :percentage="progressVal"
+                  :status="progressVal === 100 ? 'success' : ''"
+                />
+                <div class="mt-[10px]">
+                  <el-form-item>
+                    <el-button
+                      type="primary"
+                      :loading="loading"
+                      :disabled="progressVal !== 100"
+                      @click="submitForm(formRef)"
+                      >提交</el-button
+                    >
+                  </el-form-item>
+                </div>
+              </div>
+            </el-affix>
+
             <el-form
               ref="formRef"
               :model="form"
@@ -180,15 +231,10 @@ const mockButtonClick = () => {
                   >
                 </el-radio-group>
               </el-form-item>
-              <el-form-item>
-                <el-button type="primary" @click="submitForm(formRef)"
-                  >提交</el-button
-                >
-              </el-form-item>
             </el-form>
           </div>
         </el-tab-pane>
-        <el-tab-pane v-if="isDevEnv()" label="结果" name="second">
+        <el-tab-pane v-if="isDevEnv()" label="结果（仅开发环境）" name="second">
           <el-button
             type="primary"
             :disabled="!isSubmit"
@@ -204,7 +250,8 @@ const mockButtonClick = () => {
 <style lang="scss" scoped>
 .test-instructions {
   padding: 20px;
-  margin: 20px;
+  margin-top: 20px;
+  margin-bottom: 20px;
   font-family: Arial, sans-serif;
   line-height: 1.6;
   background-color: #f9f9f9;

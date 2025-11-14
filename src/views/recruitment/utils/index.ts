@@ -15,7 +15,7 @@ export const modifyExcel = async (
     const response = await fetch(
       process.env.NODE_ENV === "development"
         ? "/src/views/recruitment/constants/16PF.xlsx"
-        : "http://login.peidigroup.cn/16PF.xlsx"
+        : "https://login.peidigroup.cn/16PF.xlsx"
     );
     if (!response.ok) {
       throw new Error("无法加载Excel文件");
