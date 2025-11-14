@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 //@ts-ignore
-import { computed, reactive, ref, watch } from "vue";
+import { computed, onMounted, reactive, ref, watch } from "vue";
 import { ElMessage, type FormInstance } from "element-plus";
 import { PFLIST } from "./constants";
 import {
@@ -118,6 +118,26 @@ const progressVal = computed(() => {
   );
 });
 //#endregion
+
+const isDisabledName = ref(false);
+const isDisabledPhone = ref(false);
+
+onMounted(() => {
+  // 查看url里是否有参数name和phone, 如果有的话就提前赋值给form 并且设置两个input不可编辑
+  // hash获取参数
+  const name = window.location.href.split("name=")[1]?.split("&")[0];
+  const phone = window.location.href.split("phone=")[1]?.split("&")[0];
+  console.log(window.location.href, name, phone);
+  if (name) {
+    // 解码URI组件
+    form.name = decodeURIComponent(name);
+    isDisabledName.value = true;
+  }
+  if (phone) {
+    form.phone = phone;
+    isDisabledPhone.value = true;
+  }
+});
 </script>
 
 <template>
@@ -208,12 +228,13 @@ const progressVal = computed(() => {
               label-position="top"
             >
               <el-form-item label="姓名" prop="name">
-                <el-input v-model="form.name" />
+                <el-input v-model="form.name" :disabled="isDisabledName" />
               </el-form-item>
               <el-form-item label="手机" prop="phone">
                 <el-input
                   v-model="form.phone"
                   oninput="value=value.replace(/[^\d.]/g,'')"
+                  :disabled="isDisabledPhone"
                 />
               </el-form-item>
               <el-form-item
