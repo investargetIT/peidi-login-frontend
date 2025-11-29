@@ -30,7 +30,6 @@ import { CrossStorageClient } from "cross-storage";
 import { removeToken } from "@/utils/auth";
 import { useNav } from "@/layout/hooks/useNav";
 import { useI18n } from "vue-i18n";
-import { get } from "sortablejs";
 import router from "@/router";
 const { t } = useI18n();
 
@@ -115,6 +114,8 @@ function onkeypress({ code }: KeyboardEvent) {
 }
 
 onMounted(() => {
+  // 这是用来生成钉钉统一登录密码的
+  // console.log(encryptMessage("03365042031527679493"));
   window.document.addEventListener("keypress", onkeypress);
 
   if (!getUrlParam("source")) {
@@ -169,10 +170,10 @@ const onLogin = async formEl => {
   if (!formEl) return;
   await formEl.validate((valid, fields) => {
     // console.log("valid", valid, "fields", fields, "form", form);
-    if (!getUrlParam("source")) {
-      message(t("peidiLogin.noJumpToDefault"), { type: "error" });
-      return;
-    }
+    // if (!getUrlParam("source")) {
+    //   message(t("peidiLogin.noJumpToDefault"), { type: "error" });
+    //   return;
+    // }
     if (valid) {
       loading.value = true;
       useUserStoreHook()
@@ -206,10 +207,9 @@ const onLogin = async formEl => {
                 sourceUrl +
                 `?key1=${encryptMessage(mode.value === "email" ? form.email : form.mobile)}&key2=${encryptMessage(form.password)}&key3=${encryptMessage(remember.value.toString())}`;
               console.log("window.location.href", toUrl);
-              removeToken(); // 登录成功后，移除token
-              logout();
-              window.location.href = toUrl;
+              // removeToken(); // 登录成功后，移除token
               // logout();
+              window.location.href = toUrl;
             } else {
               message(t("peidiLogin.loginSuccessButNoJump"), {
                 type: "success"
