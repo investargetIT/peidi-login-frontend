@@ -209,7 +209,7 @@ const onLogin = async formEl => {
               console.log("window.location.href", toUrl);
               // removeToken(); // 登录成功后，移除token
               // logout();
-              window.location.href = toUrl;
+              window.location.replace(toUrl);
             } else {
               message(t("peidiLogin.loginSuccessButNoJump"), {
                 type: "success"
