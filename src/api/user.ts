@@ -68,8 +68,9 @@ type ResultTable = {
   };
 };
 
-const commonUrlApi = (url: string) => `${"https://user.peidigroup.cn"}${url}`;
-// const commonUrlApi = (url: string) => `${"http://12.18.1.12:8080"}${url}`;
+const USER_BASE_URL =
+  import.meta.env.VITE_API_USER_BASE_URL || "https://user.peidigroup.cn";
+const commonUrlApi = (url: string) => `${USER_BASE_URL}${url}`;
 
 /** 登录 */
 // export const getLogin = (data?: object) => {

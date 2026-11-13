@@ -6,11 +6,15 @@ export type AertxInfoResult = {
   msg: string;
 };
 
+const RECRUITMENT_BASE_URL =
+  import.meta.env.VITE_API_RECRUITMENT_BASE_URL || "https://api.peidigroup.cn";
+const recruitmentApi = (url: string) => `${RECRUITMENT_BASE_URL}${url}`;
+
 /** 获取招聘问卷信息 */
 export const getAertxInfo = params => {
   return http.request<AertxInfoResult>(
     "get",
-    `https://api.peidigroup.cn/ui/extra/info`,
+    recruitmentApi(`/ui/extra/info`),
     {
       params
     }
@@ -21,7 +25,7 @@ export const getAertxInfo = params => {
 export const getAertxInfoPage = params => {
   return http.request<AertxInfoResult>(
     "get",
-    `https://api.peidigroup.cn/ui/extra/page`,
+    recruitmentApi(`/ui/extra/page`),
     {
       params
     }
@@ -32,7 +36,7 @@ export const getAertxInfoPage = params => {
 export const setAertxInfo = data => {
   return http.request<AertxInfoResult>(
     "post",
-    `https://api.peidigroup.cn/ui/extra/info`,
+    recruitmentApi(`/ui/extra/info`),
     {
       data
     }
@@ -43,7 +47,7 @@ export const setAertxInfo = data => {
 export const uploadFile = data => {
   return http.request<AertxInfoResult>(
     "post",
-    `https://api.peidigroup.cn/ui/extra/upload`,
+    recruitmentApi(`/ui/extra/upload`),
     {
       data,
       headers: {
@@ -55,14 +59,10 @@ export const uploadFile = data => {
 
 /** 下载文件 */
 export const downloadFile = params => {
-  return http.request<any>(
-    "get",
-    `https://api.peidigroup.cn/ui/common/download`,
-    {
-      params,
-      headers: {
-        responseType: "blob"
-      }
+  return http.request<any>("get", recruitmentApi(`/ui/common/download`), {
+    params,
+    headers: {
+      responseType: "blob"
     }
-  );
+  });
 };

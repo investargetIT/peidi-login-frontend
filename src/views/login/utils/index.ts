@@ -1,14 +1,24 @@
 import CryptoJS from "crypto-js";
 import { CRYPTOJS_KEY } from "./constants";
 
+/** 邮箱格式 */
+const EMAIL_REG = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+/** 中国大陆手机号格式 */
+const MOBILE_REG = /^1[3-9]\d{9}$/;
+
 /**
- * 判断是否为钉钉浏览器
- * @returns 是否为钉钉浏览器
+ * 校验邮箱格式
+ * @param value 邮箱
+ * @returns 是否合法
  */
-export const isDingTalk = () => {
-  const ua = navigator.userAgent;
-  return ua.includes("DingTalk");
-};
+export const isEmail = (value: string) => EMAIL_REG.test(value);
+
+/**
+ * 校验手机号格式
+ * @param value 手机号
+ * @returns 是否合法
+ */
+export const isMobile = (value: string) => MOBILE_REG.test(value);
 
 /**
  * 获取URL参数

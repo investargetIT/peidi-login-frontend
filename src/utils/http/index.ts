@@ -29,6 +29,32 @@ const defaultConfig: AxiosRequestConfig = {
   }
 };
 
+/** 无需携带 `token` 的接口路径 */
+const whiteList = [
+  "/refresh-token",
+  "/login",
+  "/user/login",
+  "/user/validate-code",
+  "/user/reset-password",
+  "/user/email-register",
+  "/user/sms-register",
+  "/user/user-check",
+  "/ding/userInfo"
+];
+
+/** 判断请求地址是否命中白名单（兼容完整 URL 和相对路径） */
+function isWhiteListRequest(url = "") {
+  if (!url) return false;
+  try {
+    const pathname = new URL(url, window.location.origin).pathname;
+    return whiteList.some(
+      item => pathname === item || pathname.startsWith(`${item}/`)
+    );
+  } catch {
+    return whiteList.some(item => url === item || url.startsWith(`${item}?`));
+  }
+}
+
 class PureHttp {
   constructor() {
     this.httpInterceptorsRequest();
@@ -73,8 +99,7 @@ class PureHttp {
           return config;
         }
         /** 请求白名单，放置一些不需要`token`的接口（通过设置请求白名单，防止`token`过期后再请求造成的死循环问题） */
-        const whiteList = ["/refresh-token", "/login"];
-        return whiteList.some(url => config.url.endsWith(url))
+        return isWhiteListRequest(config.url)
           ? config
           : new Promise(resolve => {
               const data = getToken();

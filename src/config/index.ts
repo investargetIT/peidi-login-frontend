@@ -45,7 +45,11 @@ export const getPlatformConfig = async (app: App): Promise<undefined> => {
       return $config;
     })
     .catch(() => {
-      throw "请在public文件夹下添加platform-config.json配置文件";
+      // 配置文件缺失时使用默认配置，避免整个应用白屏
+      console.warn(
+        `[config] 未找到 ${VITE_PUBLIC_PATH}platform-config.json，已使用默认配置`
+      );
+      return getConfig();
     });
 };
 

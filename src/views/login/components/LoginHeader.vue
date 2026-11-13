@@ -1,28 +1,16 @@
 <script lang="ts" setup>
-//@ts-ignore
-import { useTranslationLang } from "@/layout/hooks/useTranslationLang";
-import { Sunny } from "@element-plus/icons-vue";
 import { useI18n } from "vue-i18n";
-const { t } = useI18n();
-const { locale, translationCh, translationEn } = useTranslationLang();
-import { useDataThemeChange } from "@/layout/hooks/useDataThemeChange";
-const { dataTheme, overallStyle, dataThemeChange } = useDataThemeChange();
-dataThemeChange(overallStyle.value);
+import { useGlobal } from "@pureadmin/utils";
 
-const handleChangeTheme = () => {
-  dataTheme.value = !dataTheme.value;
-  dataThemeChange(overallStyle.value);
-};
+const { t, locale } = useI18n();
+const { $storage } = useGlobal<GlobalPropertiesApi>();
 
 const changeLang = () => {
-  if (locale.value === "zh") {
-    locale.value = "en";
-    translationEn();
-  } else {
-    locale.value = "zh";
-    translationCh();
-  }
-  window.location.reload(); // 刷新页面, 暴力解决语言切换后, 表单验证不切换问题
+  const next = locale.value === "zh" ? "en" : "zh";
+  locale.value = next;
+  if ($storage) $storage.locale = { locale: next };
+  // 刷新页面，保证表单校验等文案同步切换
+  window.location.reload();
 };
 </script>
 
@@ -37,17 +25,6 @@ const changeLang = () => {
       <el-button circle text color="#000" size="large" @click="changeLang">
         {{ t("peidiLogin.language") }}
       </el-button>
-      <!-- 切换主题按钮, 效果不理想, 暂不使用 -->
-      <el-button
-        v-if="false"
-        circle
-        text
-        color="#000"
-        size="large"
-        @click="handleChangeTheme()"
-      >
-        <el-icon :size="18"><Sunny /></el-icon
-      ></el-button>
     </div>
   </div>
 </template>

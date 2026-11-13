@@ -48,12 +48,13 @@ export function getPluginsList(
      * vite-plugin-router-warn只在开发环境下启用，只处理vue-router文件并且只在服务启动或重启时运行一次，性能消耗可忽略不计
      */
     removeNoMatch(),
-    // mock支持
+    // mock支持（统一登录页不依赖 mock，开发/生产都关闭，避免 xhook 拦截真实请求）
     vitePluginFakeServer({
       logger: false,
       include: "mock",
       infixName: false,
-      enableProd: true
+      enableDev: false,
+      enableProd: false
     }),
     // 自定义主题
     themePreprocessorPlugin({

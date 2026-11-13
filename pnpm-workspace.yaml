@@ -1,0 +1,10 @@
+allowBuilds:
+  canvas: false
+  core-js: false
+  es5-ext: false
+  esbuild: true
+  typeit: false
+  vue-demi: true
+shamefullyHoist: true
+publicHoistPattern:
+  - "*"

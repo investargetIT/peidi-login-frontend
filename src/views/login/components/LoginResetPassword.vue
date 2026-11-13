@@ -1,75 +1,55 @@
 <script lang="ts" setup>
 import { onBeforeUnmount, onMounted, reactive, ref } from "vue";
-import LoginCircle from "./LoginCircle.vue";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
-import { LocationFilled, Back } from "@element-plus/icons-vue";
 import Mail from "@iconify-icons/ri/mail-fill";
 import Phone from "@iconify-icons/ri/phone-fill";
-import Lock from "@iconify-icons/ri/lock-fill";
 import VerifyCode from "@iconify-icons/ri/shield-check-line";
 import BackLeft from "@/assets/svg/back_left.svg?component";
-import {
-  getUserCheck,
-  getUserInfo,
-  getUserSite,
-  register,
-  registerMobile,
-  resetPassword,
-  validateCode
-} from "@/api/login";
-import * as dd from "dingtalk-jsapi";
-import {
-  DINGTALK_CORP_ID,
-  DINGTALK_LOGIN_FREE_DEFAULT_PASSWORD
-} from "@/views/login/utils/constants";
+import { resetPassword, validateCode } from "@/api/login";
 import { message } from "@/utils/message";
-import { useUserStoreHook } from "@/store/modules/user";
-import {
-  decryptMessage,
-  encryptMessage,
-  getUrlParam,
-  isDingTalk
-} from "../utils";
-import { CrossStorageClient } from "cross-storage";
-import { removeToken } from "@/utils/auth";
-import { useNav } from "@/layout/hooks/useNav";
+import { getUrlParam, isEmail, isMobile } from "../utils";
 import { useI18n } from "vue-i18n";
-import { get } from "sortablejs";
 import router from "@/router";
-import { v } from "vxe-table";
+import type { FormInstance } from "element-plus";
+
 const { t } = useI18n();
 
 const NEW_PASSWORD = "Aa123456";
 
-const { logout } = useNav();
-
-let storage: CrossStorageClient;
-
-const remember = ref(false);
 const mode = ref("email");
 const loading = ref(false);
 
 const form = reactive({
   email: "",
   mobile: "",
-  password: "",
-  site: "",
   validateCode: ""
 });
-const formRef = ref(null);
+const formRef = ref<FormInstance>();
 
-// 校验邮箱是否包含@符号
+const validationCodeSpanRef = ref<HTMLElement>();
+const isSendValidationCode = ref<string>(t("peidiLogin.sendVerifyCode"));
+let countDownTimer: IntervalHandle | null = null;
+
+/** 清空倒计时 */
+const clearCountDown = () => {
+  if (countDownTimer) {
+    clearInterval(countDownTimer);
+    countDownTimer = null;
+  }
+};
+
+// 校验邮箱格式
 const validateEmail = (rule, value, callback) => {
-  if (value && !value.includes("@")) {
+  if (value && !isEmail(value)) {
     callback(new Error(t("peidiLogin.emailCorrectReg")));
   } else {
     callback();
   }
 };
 
-// 校验是否为纯数字
+// 校验手机号格式
 const validateNumber = (rule, value, callback) => {
-  if (value && !/^\d+$/.test(value)) {
+  if (value && !isMobile(value)) {
     callback(new Error(t("peidiLogin.mobileCorrectReg")));
   } else {
     callback();
@@ -102,7 +82,6 @@ const rules: any = reactive({
 });
 
 const handleModeChange = () => {
-  // console.log("rules", rules);
   rules.email[0].required = mode.value === "email";
   rules.mobile[0].required = mode.value === "mobile";
   formRef.value?.resetFields();
@@ -120,36 +99,36 @@ onMounted(() => {
 });
 onBeforeUnmount(() => {
   window.document.removeEventListener("keypress", onkeypress);
+  clearCountDown();
 });
 
-const onLogin = async formEl => {
+const onLogin = async (formEl: FormInstance | undefined) => {
   if (!formEl) return;
-  await formEl.validate((valid, fields) => {
-    if (valid) {
-      resetPassword({
-        codeType:
-          mode.value === "email"
-            ? "email_reset_password"
-            : "sms_reset_password",
-        identifier: mode.value === "email" ? form.email : form.mobile,
-        newPassword: NEW_PASSWORD,
-        validateCode: form.validateCode
-      })
-        .then((res: any) => {
-          if (res && res?.code === 200) {
-            message(t("peidiLogin.resetPasswordSuccess"), { type: "success" });
-          } else {
-            message(res?.msg || t("peidiLogin.resetPasswordFail"), {
-              type: "error"
-            });
-          }
-        })
-        .catch(err => {
-          message(t("peidiLogin.resetPasswordFail") + "：" + err.message, {
+  await formEl.validate((valid: boolean) => {
+    if (!valid) return;
+    loading.value = true;
+    resetPassword({
+      codeType:
+        mode.value === "email" ? "email_reset_password" : "sms_reset_password",
+      identifier: mode.value === "email" ? form.email : form.mobile,
+      newPassword: NEW_PASSWORD,
+      validateCode: form.validateCode
+    })
+      .then((res: any) => {
+        if (res && res?.code === 200) {
+          message(t("peidiLogin.resetPasswordSuccess"), { type: "success" });
+        } else {
+          message(res?.msg || t("peidiLogin.resetPasswordFail"), {
             type: "error"
           });
+        }
+      })
+      .catch(err => {
+        message(t("peidiLogin.resetPasswordFail") + "：" + err?.message, {
+          type: "error"
         });
-    }
+      })
+      .finally(() => (loading.value = false));
   });
 };
 
@@ -158,48 +137,52 @@ const handleBackToLoginClick = () => {
 };
 
 //#region 验证码
-const validationCodeSpanRef = ref();
-const isSendValidationCode = ref<string>(t("peidiLogin.sendVerifyCode"));
+/** 开始倒计时 */
+const startCountDown = () => {
+  clearCountDown();
+  let countDown = 60;
+  isSendValidationCode.value = `${countDown}${t("peidiLogin.verifyCodeInfo")}`;
+  if (validationCodeSpanRef.value) {
+    validationCodeSpanRef.value.style.color = "gray";
+  }
+  countDownTimer = setInterval(() => {
+    countDown--;
+    if (!countDown) {
+      clearCountDown();
+      isSendValidationCode.value = t("peidiLogin.sendVerifyCode");
+      if (validationCodeSpanRef.value) {
+        validationCodeSpanRef.value.style.color = "#1764FF";
+      }
+    } else {
+      isSendValidationCode.value = `${countDown}${t("peidiLogin.verifyCodeInfo")}`;
+    }
+  }, 1000);
+};
 
 // 发送验证码
 const sendValidationCode = async () => {
   if (!isSendValidationCode.value.endsWith(t("peidiLogin.sendVerifyCode")))
     return;
-  if (mode.value === "email") {
-    await formRef.value!.validateField("email");
-  } else {
-    await formRef.value!.validateField("mobile");
-  }
-  // 发送
   try {
-    // const res = await sendCheckCode({ username: phone }); // 返回boolean
-    // if (res) message("验证码发送成功", { type: "success" });
-    validateCode({
+    await formRef.value!.validateField(
+      mode.value === "email" ? "email" : "mobile"
+    );
+  } catch {
+    return;
+  }
+  try {
+    const res: any = await validateCode({
       codeType:
         mode.value === "email" ? "email_reset_password" : "sms_reset_password",
       destination: mode.value === "email" ? form.email : form.mobile
-    }).then((res: any) => {
-      if (res && res?.code === 200) {
-        isSendValidationCode.value = `60${t("peidiLogin.verifyCodeInfo")}`;
-        validationCodeSpanRef.value.style = "color: gray;"; // 颜色变灰
-        const countDown = ref<number>(60); // 倒计时
-        const temp = setInterval(() => {
-          countDown.value--;
-          isSendValidationCode.value =
-            countDown.value + t("peidiLogin.verifyCodeInfo");
-          if (!countDown.value) {
-            clearInterval(temp);
-            validationCodeSpanRef.value.style = "color: #1764FF;"; // 颜色变蓝
-            isSendValidationCode.value = t("peidiLogin.sendVerifyCode");
-            countDown.value = 60;
-          }
-        }, 1000);
-      } else {
-        message(res?.msg || t("peidiLogin.verifyCodeSendFail"), {
-          type: "error"
-        });
-      }
     });
+    if (res && res?.code === 200) {
+      startCountDown();
+    } else {
+      message(res?.msg || t("peidiLogin.verifyCodeSendFail"), {
+        type: "error"
+      });
+    }
   } catch {
     message(t("peidiLogin.verifyCodeSendFail"), { type: "error" });
   }
